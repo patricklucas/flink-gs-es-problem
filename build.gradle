@@ -1,0 +1,75 @@
+plugins {
+  id 'java'
+  id 'application'
+  id 'idea'
+  id 'com.diffplug.spotless'
+}
+
+apply from: "${rootDir}/dependencies.gradle"
+
+allprojects {
+  group = 'com.patricklucas.flink'
+  version = '0.0.1-SNAPSHOT'
+}
+
+repositories {
+  mavenCentral()
+}
+
+configurations {
+  flinkShadowJar
+  implementation.extendsFrom(flinkShadowJar)
+}
+
+dependencies {
+
+  flinkShadowJar group: 'org.apache.flink', name: 'flink-connector-elasticsearch7', version: versions.flink
+  flinkShadowJar group: 'org.apache.flink', name: 'flink-gs-fs-hadoop', version: versions.flink
+
+  // Flink included
+  implementation group: 'org.apache.flink', name: 'flink-java', version: versions.flink
+  implementation group: 'org.apache.flink', name: 'flink-streaming-java', version: versions.flink
+  implementation group: 'org.apache.flink', name: 'flink-clients', version: versions.flink
+  runtimeOnly group: 'org.apache.flink', name: 'flink-runtime-web', version: versions.flink
+
+  // Lombok
+  annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+  compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+  testAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+  testCompileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+
+  // Logging API
+  implementation "org.slf4j:slf4j-api"
+
+  // Logging
+  runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: versions.log4j
+  runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-core', version: versions.log4j
+  runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: versions.log4j
+
+}
+
+application {
+  mainClass = 'com.patricklucas.flink.FlinkGsEsProblem'
+}
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(11)
+  }
+}
+
+spotless {
+  java {
+    googleJavaFormat(versions.googleJavaFormat)
+    toggleOffOn()
+  }
+}
+
+tasks.named('test') {
+  useJUnitPlatform()
+}
+
+wrapper {
+  gradleVersion = versions.gradle
+  distributionType = Wrapper.DistributionType.ALL
+}
